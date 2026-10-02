@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ReelPick | Movies picked for you</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles/global.css">
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="#top" class="brand">ReelPick</a>
+  <div class="nav-links">
+    <a href="#top" class="active">Home</a>
+    <a href="#recs">For you</a>
+    <a href="#browse">Movies</a>
+    <a href="#saved" id="savedLink">Watchlist <span id="savedCount" class="count" hidden>0</span></a>
+  </div>
+  <div class="auth-links">
+    <span id="guestLinks">
+      <a href="../../auth/login.php">Login</a>
+      <a href="../../auth/register.php" class="register-btn">Register</a>
+    </span>
+    <span id="userLinks" hidden>
+      <span class="user-name">Hi, <span id="userName"></span></span>
+      <a href="../../auth/logout.php" class="register-btn">Logout</a>
+    </span>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="hero-copy">
+    <h1>What are you in the mood for tonight?</h1>
+    <p class="lead">Pick a few vibes. Like or pass on what you see. Your picks get sharper every time.</p>
+    <div class="chip-group" role="group" aria-label="Moods"><span class="chip-label">Mood</span><span id="moodChips"></span></div>
+    <div class="chip-group" role="group" aria-label="Genres"><span class="chip-label">Genre</span><span id="genreChips"></span></div>
+    <button class="link-btn" id="resetBtn" hidden>Clear my taste profile</button>
+  </div>
+  <div id="topPick" class="top-pick" aria-live="polite"></div>
+</header>
+
+<main>
+  <section id="recs" class="block">
+    <div class="block-head"><h2>Recommended for you</h2><p id="recsNote"></p></div>
+    <div id="recsGrid" class="grid"></div>
+  </section>
+
+  <section id="saved" class="block" hidden>
+    <div class="block-head"><h2>Your watchlist</h2></div>
+    <div id="savedGrid" class="grid"></div>
+  </section>
+
+  <section id="browse" class="block">
+    <div class="block-head">
+      <h2>All movies</h2>
+      <input id="search" type="search" placeholder="Search titles" aria-label="Search titles">
+    </div>
+    <div id="filters" class="filters" role="group" aria-label="Filter by genre"></div>
+    <div id="allGrid" class="grid"></div>
+  </section>
+</main>
+
+<dialog id="modal" aria-labelledby="mTitle"></dialog>
+
+<footer class="footer">
+  <div class="footer-container">
+    <div class="footer-brand">
+      <h2>ReelPick</h2>
+      <p>Movie recommendations that learn what you like.</p>
+    </div>
+    <div class="footer-links"><h3>Explore</h3><a href="#recs">For you</a><a href="#browse">All movies</a><a href="#saved">Watchlist</a></div>
+    <div class="footer-links"><h3>Contact</h3><p>support@reelpick.com</p><p>Philippines</p></div>
+  </div>
+  <div class="footer-bottom"><p>© 2026 ReelPick. All rights reserved.</p></div>
+</footer>
+
+<script src="js/data.js"></script>
+<script src="js/script.js"></script>
+</body>
+</html>
