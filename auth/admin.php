@@ -1,7 +1,6 @@
 <?php
 session_start();
 
-// Block anyone who is not logged in as admin
 if (empty($_SESSION['is_admin'])) {
     header('Location: admin_login.php');
     exit;
@@ -25,7 +24,7 @@ try {
     $movieCount = (int) $pdo->query('SELECT COUNT(*) FROM movies')->fetchColumn();
     $userCount  = (int) $pdo->query('SELECT COUNT(*) FROM users')->fetchColumn();
 
-    foreach ($pdo->query('SELECT * FROM movies')->fetchAll() as $r) {
+    foreach ($pdo->query('SELECT * FROM movies ORDER BY movie_id DESC')->fetchAll() as $r) {
         $year = pick($r, ['year', 'release_year', 'release_date', 'released'], '');
         $movies[] = [
             'id'     => pick($r, ['id', 'movie_id']),
@@ -38,9 +37,13 @@ try {
     }
 
     foreach ($pdo->query('SELECT * FROM users')->fetchAll() as $r) {
+        $name = pick($r, ['name', 'username', 'full_name', 'fullname'], '');
+        if ($name === '') {
+            $name = trim(pick($r, ['first_name'], '') . ' ' . pick($r, ['last_name'], ''));
+        }
         $users[] = [
             'id'     => pick($r, ['id', 'user_id']),
-            'name'   => pick($r, ['name', 'username', 'full_name', 'fullname']),
+            'name'   => $name ?: 'User',
             'email'  => pick($r, ['email', 'email_address']),
             'role'   => pick($r, ['role', 'user_role', 'type'], 'User'),
             'joined' => pick($r, ['created_at', 'joined', 'date_created', 'registered_at', 'created'], ''),
@@ -90,9 +93,14 @@ main { padding: 40px 48px 60px; min-width: 0; }
 .page-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 28px; }
 .page-head h1 { font-family: var(--display); font-weight: 800; font-size: 36px; letter-spacing: -1.2px; line-height: 1.1; }
 .page-head p { color: var(--muted); font-size: 15px; }
-.tools { display: flex; gap: 10px; flex-wrap: wrap; }
+.tools { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
 .search { background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 10px 18px; color: var(--text); font: inherit; width: 240px; max-width: 100%; }
 .search::placeholder { color: var(--muted); }
+.btn { background: var(--red); border: 1px solid var(--red); color: #fff; border-radius: 999px; padding: 10px 22px; font-weight: 600; transition: background .2s; }
+.btn:hover { background: var(--red-dark); }
+.btn.ghost { background: transparent; border-color: var(--line); color: var(--text); }
+.btn.ghost:hover { background: var(--surface); }
+.btn:disabled { opacity: .6; cursor: not-allowed; }
 
 .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 22px; margin-bottom: 40px; }
 .stat { position: relative; overflow: hidden; background: var(--surface); border: 1px solid var(--line); border-radius: 22px; padding: 30px 32px; }
@@ -128,6 +136,23 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
 .icon-btn:hover { color: var(--text); border-color: var(--muted); }
 .icon-btn.danger:hover { color: var(--red); border-color: var(--red); }
 .empty { text-align: center; color: var(--muted); padding: 40px 20px; }
+
+dialog { margin: auto; width: min(480px, 92vw); background: var(--surface); color: var(--text); border: 1px solid var(--line); border-radius: 22px; padding: 32px; }
+dialog::backdrop { background: rgba(0,0,0,.72); backdrop-filter: blur(4px); }
+dialog h2 { font-family: var(--display); font-size: 26px; letter-spacing: -.8px; margin-bottom: 20px; }
+dialog label { display: block; color: var(--muted); font-size: 14px; margin-bottom: 14px; }
+dialog input[type="text"],
+dialog input[type="number"],
+dialog input[type="file"] {
+  display: block; width: 100%; margin-top: 6px; background: var(--bg); border: 1px solid var(--line);
+  border-radius: 12px; padding: 11px 14px; color: var(--text); font: inherit;
+}
+dialog input:focus { border-color: var(--red); outline: none; }
+dialog input[type="file"] { padding: 10px; cursor: pointer; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.dialog-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px; }
+.preview { margin-top: 10px; max-width: 120px; border-radius: 10px; display: none; }
+.form-error { color: #ff8b8d; font-size: 14px; margin-bottom: 12px; }
 
 @media (max-width: 860px) {
   .layout { grid-template-columns: 1fr; }
@@ -166,7 +191,6 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
   <main>
     <?php if ($dbError): ?><p class="empty" role="alert" style="color:#ff8b8d"><?= htmlspecialchars($dbError) ?></p><?php endif; ?>
 
-    <!-- DASHBOARD -->
     <section id="view-dashboard">
       <div class="page-head"><div><h1>Dashboard</h1><p>A quick look at your site.</p></div></div>
       <div class="stats">
@@ -179,7 +203,6 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
       </div>
     </section>
 
-    <!-- USERS -->
     <section id="view-users" hidden>
       <div class="page-head">
         <div><h1>Users</h1><p id="userCount"></p></div>
@@ -193,12 +216,12 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
       </div>
     </section>
 
-    <!-- MOVIES -->
     <section id="view-movies" hidden>
       <div class="page-head">
         <div><h1>Movies</h1><p id="movieCount"></p></div>
         <div class="tools">
           <input class="search" id="movieSearch" type="search" placeholder="Search movies" aria-label="Search movies">
+          <button class="btn" id="addMovieBtn">Add movie</button>
         </div>
       </div>
       <div class="table-wrap">
@@ -211,13 +234,39 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
   </main>
 </div>
 
+<dialog id="movieDialog">
+  <h2>Add movie</h2>
+  <p id="formError" class="form-error" hidden></p>
+  <form id="movieForm">
+    <label>Title<input name="title" required></label>
+    <label>Genre<input name="genre" placeholder="e.g. Horror, Action"></label>
+    <div class="two">
+      <label>Year<input name="year" type="number" min="1888" max="2100" value="<?= date('Y') ?>"></label>
+      <label>Runtime (min)<input name="runtime" type="number" min="0" value="0"></label>
+    </div>
+    <div class="two">
+      <label>Rating (0–10)<input name="rating" type="number" min="0" max="10" step="0.1" value="7.0"></label>
+      <label>Price<input name="price" type="number" min="0" step="0.01" value="0"></label>
+    </div>
+    <label>Moods<input name="moods" placeholder="e.g. intense, creepy"></label>
+    <label>About<input name="about" placeholder="Short description"></label>
+    <label>
+      Poster image
+      <input type="file" name="poster" accept="image/jpeg,image/png,image/webp,image/gif">
+    </label>
+    <img id="posterPreview" class="preview" alt="">
+    <div class="dialog-actions">
+      <button type="button" class="btn ghost" id="cancelMovie">Cancel</button>
+      <button type="submit" class="btn" id="saveMovieBtn">Save movie</button>
+    </div>
+  </form>
+</dialog>
+
 <script>
-/* ---------- DATA ---------- */
 const totals = { movies: <?= $movieCount ?>, users: <?= $userCount ?> };
 let movies = <?= json_encode($movies, $json) ?>;
 let users  = <?= json_encode($users, $json) ?>;
 
-/* ---------- HELPERS ---------- */
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
 const initial = s => esc((s || "?").trim().charAt(0).toUpperCase());
@@ -226,19 +275,21 @@ const fmtDate = d => !d || isNaN(new Date(d)) ? "" : new Date(d).toLocaleDateStr
 function thumbHTML(m, size = '') {
   const style = size ? `style="${size}"` : '';
   if (m.poster) {
-    return `<div class="thumb" ${style}><img src="${esc(m.poster)}" alt="" loading="lazy"></div>`;
+    const src = m.poster.startsWith('http') || m.poster.startsWith('/') || m.poster.startsWith('assets')
+      ? (m.poster.startsWith('assets') ? '../' + m.poster : m.poster)
+      : m.poster;
+    return `<div class="thumb" ${style}><img src="${esc(src)}" alt="" loading="lazy" onerror="this.parentNode.textContent='${initial(m.title)}'"></div>`;
   }
   return `<div class="thumb" ${style}>${initial(m.title)}</div>`;
 }
 
-/* ---------- RENDER ---------- */
 function renderDashboard() {
   $("#statMovies").textContent = totals.movies;
   $("#statUsers").textContent = totals.users;
   $("#recentMovies").innerHTML = movies.slice(0, 4).map(m => `
     <div class="row">${thumbHTML(m, 'width:34px;height:50px;font-size:15px')}
-    <div class="grow"><strong>${esc(m.title)}</strong><small>${esc(m.genre)}, ${m.year}</small></div>
-    <span class="rating">${Number(m.rating).toFixed(1)}</span></div>`).join("") || `<p class="empty">No movies yet.</p>`;
+    <div class="grow"><strong>${esc(m.title)}</strong><small>${esc(m.genre || '')}${m.year ? ', ' + m.year : ''}</small></div>
+    <span class="rating">${Number(m.rating || 0).toFixed(1)}</span></div>`).join("") || `<p class="empty">No movies yet.</p>`;
   $("#recentUsers").innerHTML = users.slice(0, 4).map(u => `
     <div class="row"><div class="avatar">${initial(u.name)}</div>
     <div class="grow"><strong>${esc(u.name)}</strong><small>${esc(u.email)}</small></div>
@@ -247,7 +298,7 @@ function renderDashboard() {
 
 function renderUsers() {
   const q = $("#userSearch").value.toLowerCase();
-  const list = users.filter(u => (u.name + u.email).toLowerCase().includes(q));
+  const list = users.filter(u => ((u.name || '') + (u.email || '')).toLowerCase().includes(q));
   $("#userCount").textContent = `${users.length} registered`;
   $("#userRows").innerHTML = list.map(u => `
     <tr><td><div class="cell"><div class="avatar">${initial(u.name)}</div>
@@ -260,20 +311,21 @@ function renderUsers() {
 
 function renderMovies() {
   const q = $("#movieSearch").value.toLowerCase();
-  const list = movies.filter(m => (m.title + m.genre).toLowerCase().includes(q));
+  const list = movies.filter(m => ((m.title || '') + (m.genre || '')).toLowerCase().includes(q));
   $("#movieCount").textContent = `${movies.length} in the catalog`;
   $("#movieRows").innerHTML = list.map(m => `
-    <tr><td><div class="cell">${thumbHTML(m)}<strong>${esc(m.title)}</strong></div></td>
-    <td><span class="pill">${esc(m.genre)}</span></td>
-    <td>${m.year}</td>
-    <td class="rating">${Number(m.rating).toFixed(1)}</td>
-    <td><div class="actions"><button class="icon-btn danger" data-del-movie="${m.id}">Delete</button></div></td></tr>`
-  ).join("") || `<tr><td colspan="5" class="empty">No movies match your search.</td></tr>`;
+    <tr>
+      <td><div class="cell">${thumbHTML(m)}<strong>${esc(m.title)}</strong></div></td>
+      <td><span class="pill">${esc(m.genre || '—')}</span></td>
+      <td>${m.year || '—'}</td>
+      <td class="rating">${Number(m.rating || 0).toFixed(1)}</td>
+      <td><div class="actions"><button class="icon-btn danger" data-del-movie="${m.id}">Delete</button></div></td>
+    </tr>`
+  ).join("") || `<tr><td colspan="5" class="empty">No movies. Use Add movie to create one.</td></tr>`;
 }
 
 function renderAll() { renderDashboard(); renderUsers(); renderMovies(); }
 
-/* ---------- NAVIGATION ---------- */
 function show(view) {
   ["dashboard", "users", "movies"].forEach(v => $("#view-" + v).hidden = v !== view);
   document.querySelectorAll(".side-nav button").forEach(b => b.classList.toggle("active", b.dataset.view === view));
@@ -281,23 +333,97 @@ function show(view) {
 }
 document.querySelectorAll(".side-nav button").forEach(b => b.addEventListener("click", () => show(b.dataset.view)));
 
-/* ---------- ACTIONS ---------- */
 $("#userSearch").addEventListener("input", renderUsers);
 $("#movieSearch").addEventListener("input", renderMovies);
 
-document.addEventListener("click", e => {
+document.addEventListener("click", async e => {
   const du = e.target.closest("[data-del-user]");
   const dm = e.target.closest("[data-del-movie]");
+
   if (du && confirm("Delete this user?")) {
     users = users.filter(u => u.id != du.dataset.delUser);
     totals.users = users.length;
     renderAll();
   }
-  if (dm && confirm("Delete this movie?")) {
-    // Optional: call a delete endpoint later
-    movies = movies.filter(m => m.id != dm.dataset.delMovie);
+
+  if (dm && confirm("Delete this movie from the database?")) {
+    const id = dm.dataset.delMovie;
+    try {
+      const fd = new FormData();
+      fd.append("id", id);
+      const res = await fetch("delete_movie.php", { method: "POST", body: fd });
+      const json = await res.json();
+      if (!json.ok) {
+        alert(json.error || "Delete failed");
+        return;
+      }
+      movies = movies.filter(m => m.id != id);
+      totals.movies = movies.length;
+      renderAll();
+    } catch {
+      alert("Network error");
+    }
+  }
+});
+
+/* ---------- ADD MOVIE ---------- */
+const dlg = $("#movieDialog");
+const form = $("#movieForm");
+const preview = $("#posterPreview");
+const formError = $("#formError");
+const saveBtn = $("#saveMovieBtn");
+
+$("#addMovieBtn").addEventListener("click", () => {
+  form.reset();
+  preview.style.display = "none";
+  preview.src = "";
+  formError.hidden = true;
+  dlg.showModal();
+});
+
+$("#cancelMovie").addEventListener("click", () => dlg.close());
+
+form.poster.addEventListener("change", () => {
+  const file = form.poster.files[0];
+  if (file) {
+    preview.src = URL.createObjectURL(file);
+    preview.style.display = "block";
+  } else {
+    preview.style.display = "none";
+  }
+});
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  formError.hidden = true;
+  saveBtn.disabled = true;
+  saveBtn.textContent = "Saving…";
+
+  try {
+    const res = await fetch("add_movie.php", { method: "POST", body: new FormData(form) });
+    const json = await res.json();
+    if (!json.ok) {
+      formError.textContent = json.error || "Something went wrong";
+      formError.hidden = false;
+      return;
+    }
+    movies.unshift({
+      id: json.movie.id,
+      title: json.movie.title,
+      genre: json.movie.genre || '',
+      year: json.movie.year || '',
+      rating: json.movie.rating || 0,
+      poster: json.movie.poster || '',
+    });
     totals.movies = movies.length;
     renderAll();
+    dlg.close();
+  } catch {
+    formError.textContent = "Network error. Please try again.";
+    formError.hidden = false;
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.textContent = "Save movie";
   }
 });
 
@@ -305,7 +431,6 @@ $("#logoutBtn").addEventListener("click", () => {
   window.location.href = "logout.php";
 });
 
-/* ---------- INIT ---------- */
 renderAll();
 const start = location.hash.slice(1);
 show(["users", "movies"].includes(start) ? start : "dashboard");

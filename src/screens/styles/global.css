@@ -64,6 +64,16 @@ a { color: inherit; }
 .btn.ghost:hover { border-color: var(--muted); background: var(--surface); }
 .btn.on { background: var(--amber); border-color: var(--amber); color: #1a1200; }
 
+/* Danger button (Remove from watchlist) */
+.danger-btn {
+  border-color: var(--red) !important;
+  color: var(--red) !important;
+}
+.danger-btn:hover {
+  background: rgba(229, 56, 59, 0.12) !important;
+  border-color: var(--red) !important;
+}
+
 /* SECTIONS + GRID */
 .block { max-width: 1200px; margin: 0 auto; padding: 48px 40px 8px; }
 .block-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 22px; }
