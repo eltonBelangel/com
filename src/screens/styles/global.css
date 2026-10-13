@@ -160,3 +160,22 @@ dialog::backdrop { background: rgba(0,0,0,.72); backdrop-filter: blur(4px); }
   .chip-label { width: auto; }
 }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
+
+/* ---------- Login popup ---------- */
+#authDialog[open] { display: block; width: min(420px, 94vw); animation: pop .22s ease; }
+#authDialog::backdrop { background: rgba(0,0,0,.45); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+.auth-inner { position: relative; padding: 36px 32px 26px; }
+#authDialog h2 { font-family: var(--display); font-weight: 800; font-size: 28px; letter-spacing: -1px; line-height: 1.1; }
+.auth-sub { color: var(--muted); font-size: 14px; margin: 8px 0 22px; }
+.auth-field { display: block; color: var(--muted); font-size: 14px; font-weight: 500; margin-bottom: 14px; }
+.auth-field input { display: block; width: 100%; margin-top: 6px; background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; color: var(--text); font: inherit; transition: border-color .2s, box-shadow .2s; }
+.auth-field input::placeholder { color: #5f5658; }
+.auth-field input:focus { outline: none; border-color: var(--red); box-shadow: 0 0 0 4px rgba(229,56,59,.15); }
+.pw-wrap { position: relative; display: block; }
+.pw-wrap input { padding-right: 64px; }
+.pw-toggle { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); margin-top: 3px; background: none; border: 0; color: var(--muted); font-size: 13px; padding: 6px 8px; border-radius: 8px; cursor: pointer; }
+.pw-toggle:hover { color: var(--text); }
+.auth-submit { width: 100%; padding: 12px; margin-top: 6px; }
+.auth-submit:disabled { opacity: .65; cursor: wait; }
+.auth-foot { text-align: center; color: var(--muted); font-size: 14px; margin-top: 18px; }
+.auth-foot a { color: var(--red); }

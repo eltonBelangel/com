@@ -33,6 +33,10 @@ try {
             'year'   => substr((string) $year, 0, 4),
             'rating' => (float) pick($r, ['rating', 'score', 'vote_average'], 0),
             'poster' => pick($r, ['poster', 'image', 'poster_path', 'poster_url'], ''),
+            'runtime' => (int) pick($r, ['runtime'], 0),
+            'price'  => (float) pick($r, ['price'], 0),
+            'moods'  => pick($r, ['moods'], ''),
+            'about'  => pick($r, ['about'], ''),
         ];
     }
 
@@ -43,6 +47,8 @@ try {
         }
         $users[] = [
             'id'     => pick($r, ['id', 'user_id']),
+            'first'  => pick($r, ['first_name'], ''),
+            'last'   => pick($r, ['last_name'], ''),
             'name'   => $name ?: 'User',
             'email'  => pick($r, ['email', 'email_address']),
             'role'   => pick($r, ['role', 'user_role', 'type'], 'User'),
@@ -137,21 +143,49 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
 .icon-btn.danger:hover { color: var(--red); border-color: var(--red); }
 .empty { text-align: center; color: var(--muted); padding: 40px 20px; }
 
-dialog { margin: auto; width: min(480px, 92vw); background: var(--surface); color: var(--text); border: 1px solid var(--line); border-radius: 22px; padding: 32px; }
+dialog { margin: auto; width: min(580px, 94vw); max-height: 96vh; overflow-y: auto; scrollbar-width: none; -ms-overflow-style: none; background: var(--surface); color: var(--text); border: 1px solid var(--line); border-radius: 22px; padding: 22px 28px; }
+dialog::-webkit-scrollbar { display: none; }
 dialog::backdrop { background: rgba(0,0,0,.72); backdrop-filter: blur(4px); }
-dialog h2 { font-family: var(--display); font-size: 26px; letter-spacing: -.8px; margin-bottom: 20px; }
-dialog label { display: block; color: var(--muted); font-size: 14px; margin-bottom: 14px; }
-dialog input[type="text"],
-dialog input[type="number"],
-dialog input[type="file"] {
-  display: block; width: 100%; margin-top: 6px; background: var(--bg); border: 1px solid var(--line);
-  border-radius: 12px; padding: 11px 14px; color: var(--text); font: inherit;
+dialog h2 { font-family: var(--display); font-size: 24px; letter-spacing: -.8px; margin-bottom: 12px; }
+dialog label { display: block; color: var(--muted); font-size: 13px; margin-bottom: 10px; }
+dialog input:not([type="checkbox"]),
+dialog select,
+.multi summary {
+  display: block; width: 100%; margin-top: 4px; background: var(--bg); border: 1px solid var(--line);
+  border-radius: 10px; padding: 8px 12px; color: var(--text); font: inherit; font-size: 14px;
 }
-dialog input:focus { border-color: var(--red); outline: none; }
+dialog input::placeholder { color: var(--muted); }
+dialog input:focus, dialog select:focus, .multi[open] summary { border-color: var(--red); outline: none; }
 dialog input[type="file"] { padding: 10px; cursor: pointer; }
+dialog input[type="file"]::file-selector-button {
+  background: var(--surface); color: var(--text); border: 1px solid var(--line);
+  border-radius: 8px; padding: 6px 12px; margin-right: 12px; cursor: pointer; font: inherit;
+}
+dialog select {
+  appearance: none; -webkit-appearance: none; cursor: pointer; padding-right: 40px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%239a9092' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 14px center;
+}
+dialog select option { background: var(--surface); color: var(--text); }
+
+.field { position: relative; margin-bottom: 10px; color: var(--muted); font-size: 13px; }
+.multi summary { list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.multi summary::-webkit-details-marker { display: none; }
+.multi summary::after {
+  content: ""; flex: none; width: 14px; height: 14px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%239a9092' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+.multi[open] summary::after { transform: rotate(180deg); }
+.multi summary.placeholder { color: var(--muted); }
+.multi-list { position: absolute; left: 0; right: 0; z-index: 10; display: grid; grid-template-columns: 1fr 1fr; gap: 2px 8px; margin-top: 4px; padding: 8px; background: var(--bg); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 12px 28px rgba(0,0,0,.55); }
+.multi-list label { display: flex; align-items: center; gap: 8px; margin: 0; padding: 6px 8px; border-radius: 8px; color: var(--text); font-size: 14px; cursor: pointer; }
+.multi-list label:hover { background: var(--surface); }
+.multi-list input { width: 16px; height: 16px; margin: 0; accent-color: var(--red); }
 .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.dialog-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px; }
-.preview { margin-top: 10px; max-width: 120px; border-radius: 10px; display: none; }
+.four { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+@media (max-width: 520px) { .four { grid-template-columns: 1fr 1fr; } .two { grid-template-columns: 1fr; } }
+.dialog-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 6px; }
+.preview { margin: 0 0 8px; max-height: 56px; border-radius: 8px; display: none; }
 .form-error { color: #ff8b8d; font-size: 14px; margin-bottom: 12px; }
 
 @media (max-width: 860px) {
@@ -234,22 +268,74 @@ dialog input[type="file"] { padding: 10px; cursor: pointer; }
   </main>
 </div>
 
+<dialog id="userDialog">
+  <h2>Edit user</h2>
+  <p id="userFormError" class="form-error" hidden></p>
+  <form id="userForm">
+    <input type="hidden" name="id" id="userId" value="">
+    <div class="two">
+      <label>First name<input type="text" name="first_name" required></label>
+      <label>Last name<input type="text" name="last_name" required></label>
+    </div>
+    <label>Email<input type="email" name="email" required></label>
+    <label>New password (leave blank to keep the current one)
+      <input type="password" name="password" minlength="8" autocomplete="new-password" placeholder="At least 8 characters">
+    </label>
+    <div class="dialog-actions">
+      <button type="button" class="btn ghost" id="cancelUser">Cancel</button>
+      <button type="submit" class="btn" id="saveUserBtn">Save changes</button>
+    </div>
+  </form>
+</dialog>
+
 <dialog id="movieDialog">
-  <h2>Add movie</h2>
+  <h2 id="dialogTitle">Add movie</h2>
   <p id="formError" class="form-error" hidden></p>
   <form id="movieForm">
-    <label>Title<input name="title" required></label>
-    <label>Genre<input name="genre" placeholder="e.g. Horror, Action"></label>
+    <input type="hidden" name="id" id="movieId" value="">
+    <label>Title<input type="text" name="title" required></label>
     <div class="two">
+      <label>Genre
+      <select name="genre" required>
+        <option value="" disabled selected>Select a genre</option>
+        <option value="Action">Action</option>
+        <option value="Horror">Horror</option>
+        <option value="Adventure">Adventure</option>
+        <option value="Animation">Animation</option>
+        <option value="Comedy">Comedy</option>
+        <option value="Sci-Fi">Sci-Fi</option>
+        <option value="Romance">Romance</option>
+        <option value="Drama">Drama</option>
+        <option value="Supernatural">Supernatural</option>
+        <option value="Slasher">Slasher</option>
+        <option value="Fantasy">Fantasy</option>
+      </select>
+      </label>
+      <div class="field">Moods
+      <details class="multi" id="moodsBox">
+        <summary id="moodsSummary" class="placeholder">Select moods</summary>
+        <div class="multi-list">
+        <label><input type="checkbox" name="moods[]" value="clever"> Clever</label>
+        <label><input type="checkbox" name="moods[]" value="creepy"> Creepy</label>
+        <label><input type="checkbox" name="moods[]" value="dark humor"> Dark humor</label>
+        <label><input type="checkbox" name="moods[]" value="epic"> Epic</label>
+        <label><input type="checkbox" name="moods[]" value="gory"> Gory</label>
+        <label><input type="checkbox" name="moods[]" value="heartfelt"> Heartfelt</label>
+        <label><input type="checkbox" name="moods[]" value="intense"> Intense</label>
+        <label><input type="checkbox" name="moods[]" value="mind-bending"> Mind-bending</label>
+        <label><input type="checkbox" name="moods[]" value="survival"> Survival</label>
+        <label><input type="checkbox" name="moods[]" value="whimsical"> Whimsical</label>
+        </div>
+      </details>
+      </div>
+    </div>
+    <div class="four">
       <label>Year<input name="year" type="number" min="1888" max="2100" value="<?= date('Y') ?>"></label>
       <label>Runtime (min)<input name="runtime" type="number" min="0" value="0"></label>
-    </div>
-    <div class="two">
       <label>Rating (0–10)<input name="rating" type="number" min="0" max="10" step="0.1" value="7.0"></label>
       <label>Price<input name="price" type="number" min="0" step="0.01" value="0"></label>
     </div>
-    <label>Moods<input name="moods" placeholder="e.g. intense, creepy"></label>
-    <label>About<input name="about" placeholder="Short description"></label>
+    <label>About<input type="text" name="about" placeholder="Short description"></label>
     <label>
       Poster image
       <input type="file" name="poster" accept="image/jpeg,image/png,image/webp,image/gif">
@@ -305,7 +391,7 @@ function renderUsers() {
       <div><strong>${esc(u.name)}</strong><br><small style="color:var(--muted)">${esc(u.email)}</small></div></div></td>
     <td><span class="pill ${u.role === "Admin" ? "admin" : ""}">${esc(u.role)}</span></td>
     <td>${fmtDate(u.joined)}</td>
-    <td><div class="actions"><button class="icon-btn danger" data-del-user="${u.id}">Delete</button></div></td></tr>`
+    <td><div class="actions"><button class="icon-btn" data-edit-user="${u.id}">Edit</button><button class="icon-btn danger" data-del-user="${u.id}">Delete</button></div></td></tr>`
   ).join("") || `<tr><td colspan="4" class="empty">No users match your search.</td></tr>`;
 }
 
@@ -319,7 +405,7 @@ function renderMovies() {
       <td><span class="pill">${esc(m.genre || '—')}</span></td>
       <td>${m.year || '—'}</td>
       <td class="rating">${Number(m.rating || 0).toFixed(1)}</td>
-      <td><div class="actions"><button class="icon-btn danger" data-del-movie="${m.id}">Delete</button></div></td>
+      <td><div class="actions"><button class="icon-btn" data-edit-movie="${m.id}">Edit</button><button class="icon-btn danger" data-del-movie="${m.id}">Delete</button></div></td>
     </tr>`
   ).join("") || `<tr><td colspan="5" class="empty">No movies. Use Add movie to create one.</td></tr>`;
 }
@@ -339,11 +425,27 @@ $("#movieSearch").addEventListener("input", renderMovies);
 document.addEventListener("click", async e => {
   const du = e.target.closest("[data-del-user]");
   const dm = e.target.closest("[data-del-movie]");
+  const em = e.target.closest("[data-edit-movie]");
+  const eu = e.target.closest("[data-edit-user]");
 
-  if (du && confirm("Delete this user?")) {
-    users = users.filter(u => u.id != du.dataset.delUser);
-    totals.users = users.length;
-    renderAll();
+  if (eu) openUserEdit(eu.dataset.editUser);
+
+  if (em) openEdit(em.dataset.editMovie);
+
+  if (du && confirm("Delete this user? Their watchlist will be deleted too.")) {
+    const id = du.dataset.delUser;
+    try {
+      const fd = new FormData();
+      fd.append("id", id);
+      const res = await fetch("delete_user.php", { method: "POST", body: fd });
+      const json = await res.json();
+      if (!json.ok) { alert(json.error || "Delete failed"); return; }
+      users = users.filter(u => u.id != id);
+      totals.users = users.length;
+      renderAll();
+    } catch {
+      alert("Could not delete the user. Is delete_user.php in the auth folder?");
+    }
   }
 
   if (dm && confirm("Delete this movie from the database?")) {
@@ -351,7 +453,7 @@ document.addEventListener("click", async e => {
     try {
       const fd = new FormData();
       fd.append("id", id);
-      const res = await fetch("delete_movie.php", { method: "POST", body: fd });
+      const res = await fetch("delete.php", { method: "POST", body: fd });
       const json = await res.json();
       if (!json.ok) {
         alert(json.error || "Delete failed");
@@ -366,6 +468,52 @@ document.addEventListener("click", async e => {
   }
 });
 
+/* ---------- EDIT USER ---------- */
+const udlg = $("#userDialog"), uform = $("#userForm"), uerr = $("#userFormError"), usave = $("#saveUserBtn");
+
+function openUserEdit(id) {
+  const u = users.find(x => x.id == id);
+  if (!u) return;
+  uform.reset();
+  uerr.hidden = true;
+  $("#userId").value = u.id;
+  uform.elements.first_name.value = u.first || "";
+  uform.elements.last_name.value = u.last || "";
+  uform.elements.email.value = u.email || "";
+  udlg.showModal();
+}
+$("#cancelUser").addEventListener("click", () => udlg.close());
+
+uform.addEventListener("submit", async e => {
+  e.preventDefault();
+  uerr.hidden = true;
+  usave.disabled = true;
+  usave.textContent = "Saving…";
+  try {
+    const res = await fetch("edit_user.php", { method: "POST", body: new FormData(uform) });
+    const raw = await res.text();
+    let json;
+    try { json = JSON.parse(raw); }
+    catch {
+      uerr.textContent = (res.ok ? "Server sent an invalid response: " : "Server error " + res.status + ": ")
+        + raw.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, 220);
+      uerr.hidden = false;
+      return;
+    }
+    if (!json.ok) { uerr.textContent = json.error || "Something went wrong"; uerr.hidden = false; return; }
+    const i = users.findIndex(u => u.id == json.user.id);
+    if (i > -1) users[i] = { ...users[i], ...json.user };
+    renderAll();
+    udlg.close();
+  } catch {
+    uerr.textContent = "Network error. Please try again.";
+    uerr.hidden = false;
+  } finally {
+    usave.disabled = false;
+    usave.textContent = "Save changes";
+  }
+});
+
 /* ---------- ADD MOVIE ---------- */
 const dlg = $("#movieDialog");
 const form = $("#movieForm");
@@ -373,8 +521,61 @@ const preview = $("#posterPreview");
 const formError = $("#formError");
 const saveBtn = $("#saveMovieBtn");
 
+const moodsBox = $("#moodsBox"), moodsSummary = $("#moodsSummary");
+function updateMoodsSummary() {
+  const picked = [...form.querySelectorAll('input[name="moods[]"]:checked')].map(i => i.parentNode.textContent.trim());
+  moodsSummary.textContent = picked.length ? picked.join(", ") : "Select moods";
+  moodsSummary.classList.toggle("placeholder", !picked.length);
+}
+moodsBox.addEventListener("change", updateMoodsSummary);
+
+function setMode(editing) {
+  $("#dialogTitle").textContent = editing ? "Edit movie" : "Add movie";
+  saveBtn.textContent = editing ? "Save changes" : "Save movie";
+}
+
+function openEdit(id) {
+  const m = movies.find(x => x.id == id);
+  if (!m) return;
+  form.reset();
+  formError.hidden = true;
+  $("#movieId").value = m.id;
+  form.elements.title.value = m.title || "";
+  // genre: add a temporary option if the saved value is not in the list
+  const g = (m.genre || "").split(",")[0].trim();
+  if (g && ![...form.elements.genre.options].some(o => o.value === g)) {
+    const o = new Option(g, g);
+    o.dataset.temp = "1";
+    form.elements.genre.add(o);
+  }
+  form.elements.genre.value = g;
+  form.elements.year.value = m.year || new Date().getFullYear();
+  form.elements.runtime.value = m.runtime || 0;
+  form.elements.rating.value = m.rating || 0;
+  form.elements.price.value = m.price || 0;
+  form.elements.about.value = m.about || "";
+  const picked = String(m.moods || "").split(",").map(x => x.trim().toLowerCase()).filter(Boolean);
+  form.querySelectorAll('input[name="moods[]"]').forEach(c => c.checked = picked.includes(c.value));
+  moodsBox.open = false;
+  updateMoodsSummary();
+  if (m.poster) {
+    preview.src = m.poster.startsWith("http") ? m.poster : "../" + m.poster;
+    preview.style.display = "block";
+  } else {
+    preview.style.display = "none";
+    preview.src = "";
+  }
+  setMode(true);
+  dlg.showModal();
+}
+
 $("#addMovieBtn").addEventListener("click", () => {
   form.reset();
+  [...form.elements.genre.options].filter(o => o.dataset.temp).forEach(o => o.remove());
+  $("#movieId").value = "";
+  setMode(false);
+  moodsBox.open = false;
+  updateMoodsSummary();
   preview.style.display = "none";
   preview.src = "";
   formError.hidden = true;
@@ -383,8 +584,8 @@ $("#addMovieBtn").addEventListener("click", () => {
 
 $("#cancelMovie").addEventListener("click", () => dlg.close());
 
-form.poster.addEventListener("change", () => {
-  const file = form.poster.files[0];
+form.elements.poster.addEventListener("change", () => {
+  const file = form.elements.poster.files[0];
   if (file) {
     preview.src = URL.createObjectURL(file);
     preview.style.display = "block";
@@ -400,21 +601,40 @@ form.addEventListener("submit", async (e) => {
   saveBtn.textContent = "Saving…";
 
   try {
-    const res = await fetch("add_movie.php", { method: "POST", body: new FormData(form) });
-    const json = await res.json();
+    const editingId = $("#movieId").value;
+    const res = await fetch(editingId ? "edit_movie.php" : "add_movie.php", { method: "POST", body: new FormData(form) });
+    const raw = await res.text();
+    let json;
+    try { json = JSON.parse(raw); }
+    catch {
+      formError.textContent = (res.ok ? "Server sent an invalid response: " : "Server error " + res.status + ": ")
+        + raw.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, 220);
+      formError.hidden = false;
+      return;
+    }
     if (!json.ok) {
       formError.textContent = json.error || "Something went wrong";
       formError.hidden = false;
       return;
     }
-    movies.unshift({
+    const saved = {
       id: json.movie.id,
       title: json.movie.title,
       genre: json.movie.genre || '',
       year: json.movie.year || '',
       rating: json.movie.rating || 0,
       poster: json.movie.poster || '',
-    });
+      runtime: json.movie.runtime || 0,
+      price: json.movie.price || 0,
+      moods: json.movie.moods || '',
+      about: json.movie.about || '',
+    };
+    if (editingId) {
+      const i = movies.findIndex(m => m.id == editingId);
+      if (i > -1) movies[i] = saved; else movies.unshift(saved);
+    } else {
+      movies.unshift(saved);
+    }
     totals.movies = movies.length;
     renderAll();
     dlg.close();
@@ -423,7 +643,7 @@ form.addEventListener("submit", async (e) => {
     formError.hidden = false;
   } finally {
     saveBtn.disabled = false;
-    saveBtn.textContent = "Save movie";
+    setMode(!!$("#movieId").value);
   }
 });
 

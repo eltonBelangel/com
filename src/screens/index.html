@@ -21,7 +21,7 @@
   </div>
   <div class="auth-links">
     <span id="guestLinks">
-      <a href="../../auth/login.php">Login</a>
+      <a href="../../auth/login.php" data-login>Login</a>
       <a href="../../auth/register.php" class="register-btn">Register</a>
     </span>
     <span id="userLinks" hidden>
@@ -79,6 +79,28 @@
     <div id="allGrid" class="grid"></div>
   </section>
 </main>
+
+<dialog id="authDialog" aria-labelledby="authTitle">
+  <div class="auth-inner">
+    <button class="close" type="button" data-auth-close aria-label="Close">×</button>
+    <h2 id="authTitle">Welcome back</h2>
+    <p class="auth-sub">Sign in to see your watchlist and picks made for you.</p>
+    <form id="loginPopupForm" novalidate>
+      <p class="form-error" id="lpError" role="alert" hidden></p>
+      <label class="auth-field">Email
+        <input type="email" id="lpEmail" name="email" placeholder="you@example.com" autocomplete="email" required>
+      </label>
+      <label class="auth-field">Password
+        <span class="pw-wrap">
+          <input type="password" id="lpPassword" name="password" placeholder="Enter your password" autocomplete="current-password" required>
+          <button type="button" class="pw-toggle" id="lpToggle" aria-label="Show password" aria-pressed="false">Show</button>
+        </span>
+      </label>
+      <button class="btn auth-submit" id="lpSubmit" type="submit">Login</button>
+    </form>
+    <p class="auth-foot">New to ReelPick? <a href="../../auth/register.php">Create an account</a></p>
+  </div>
+</dialog>
 
 <dialog id="modal" aria-labelledby="mTitle"></dialog>
 

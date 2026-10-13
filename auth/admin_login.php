@@ -9,13 +9,16 @@ if (!empty($_SESSION['is_admin'])) {
 
 $error = '';
 if (isset($_GET['error'])) {
-    $error = 'Wrong username or password.';
+    $error = ($_GET['error'] === 'locked')
+        ? 'Too many attempts. Please wait a minute.'
+        : 'Wrong username or password.';
 }
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="robots" content="noindex,nofollow">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Admin Login | ReelPick</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">

@@ -10,11 +10,18 @@ if (empty($_SESSION['is_admin'])) {
 require_once __DIR__ . '/db.php'; // $pdo
 
 $title   = trim($_POST['title'] ?? '');
+$ALLOWED_GENRES = ['Action','Horror','Adventure','Animation','Comedy','Sci-Fi','Romance','Drama','Supernatural','Slasher','Fantasy'];
+$ALLOWED_MOODS  = ['clever','creepy','dark humor','epic','gory','heartfelt','intense','mind-bending','survival','whimsical'];
 $genre   = trim($_POST['genre'] ?? '');
+if (!in_array($genre, $ALLOWED_GENRES, true)) {
+  echo json_encode(['ok' => false, 'error' => 'Please choose a genre']);
+  exit;
+}
 $year    = (int)($_POST['year'] ?? date('Y'));
 $runtime = (int)($_POST['runtime'] ?? 0);
 $rating  = (float)($_POST['rating'] ?? 7.0);
-$moods   = trim($_POST['moods'] ?? '');
+$moodList = array_values(array_intersect((array)($_POST['moods'] ?? []), $ALLOWED_MOODS));
+$moods   = implode(',', $moodList);
 $about   = trim($_POST['about'] ?? 'Added from admin panel.');
 $price   = (float)($_POST['price'] ?? 0);
 

@@ -154,12 +154,6 @@ $err = $msgs[$_GET['error'] ?? ''] ?? '';
     Create an account
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
   </a>
-
-  <!-- Admin Login link -->
-  <a class="admin-link" href="admin_login.php">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.2 8-8 9-4.8-1-8-4.5-8-9V6z"/></svg>
-    Admin login
-  </a>
 </main>
 
 <script>

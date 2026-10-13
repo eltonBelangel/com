@@ -4,9 +4,10 @@
 */
 const IMG = "../../assets/Images/";
 const $ = (s, r = document) => r.querySelector(s);
+let NS = "";   // "" = guest, "u5_" = logged-in user 5 (keeps each account's data separate)
 const store = {
-  get(k, d) { try { return JSON.parse(localStorage.getItem("rp_" + k)) ?? d; } catch { return d; } },
-  set(k, v) { try { localStorage.setItem("rp_" + k, JSON.stringify(v)); } catch {} }
+  get(k, d) { try { return JSON.parse(localStorage.getItem("rp_" + NS + k)) ?? d; } catch { return d; } },
+  set(k, v) { try { localStorage.setItem("rp_" + NS + k, JSON.stringify(v)); } catch {} }
 };
 const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
 
@@ -304,22 +305,22 @@ async function initSession() {
     const me = await api("GET", "me.php");
     if (me.loggedIn) {
       user = me;
-      // Per-user watchlist only from this account's DB rows
+      NS = "u" + me.user_id + "_";                 // this account's own storage
+      S.picks  = new Set(store.get("picks", []));
+      S.liked  = new Set(store.get("liked", []));
+      S.passed = new Set(store.get("passed", []));
       const { ids } = await api("GET", "watchlist.php");
-      S.saved = new Set((ids || []).map(Number));
-      store.set("saved", [...S.saved]);
-      store.set("owner", true);
+      S.saved = new Set((ids || []).map(Number));  // watchlist always comes from the DB
       $("#guestLinks").hidden = true;
       $("#userLinks").hidden = false;
       if ($("#userName")) $("#userName").textContent = me.name || "";
     } else {
-      if (store.get("owner", false)) {
-        S.saved.clear();
-        store.set("saved", []);
-        store.set("owner", false);
-      } else {
-        S.saved = new Set(store.get("saved", []));
-      }
+      user = null;
+      NS = "";                                     // guest storage
+      S.picks  = new Set(store.get("picks", []));
+      S.liked  = new Set(store.get("liked", []));
+      S.passed = new Set(store.get("passed", []));
+      S.saved  = new Set(store.get("saved", []));
       $("#guestLinks").hidden = false;
       $("#userLinks").hidden = true;
     }
@@ -393,6 +394,63 @@ document.addEventListener("click", e => {
 $("#search").addEventListener("input", e => {
   S.q = e.target.value;
   renderAll();
+});
+
+/* ---------- Login popup ---------- */
+const authDlg = $("#authDialog");
+const lpForm = $("#loginPopupForm"), lpError = $("#lpError"), lpSubmit = $("#lpSubmit");
+
+function openLogin() {
+  lpForm.reset();
+  lpError.hidden = true;
+  $("#lpPassword").type = "password";
+  $("#lpToggle").textContent = "Show";
+  if (!authDlg.open) authDlg.showModal();
+  $("#lpEmail").focus();
+}
+
+document.addEventListener("click", e => {
+  const l = e.target.closest("[data-login]");
+  if (l) { e.preventDefault(); openLogin(); return; }
+  // X button, or a click on the blurred backdrop
+  if (e.target.closest("[data-auth-close]") || e.target === authDlg) authDlg.close();
+});
+
+$("#lpToggle").addEventListener("click", () => {
+  const pw = $("#lpPassword"), show = pw.type === "password";
+  pw.type = show ? "text" : "password";
+  $("#lpToggle").textContent = show ? "Hide" : "Show";
+  $("#lpToggle").setAttribute("aria-pressed", show);
+});
+
+lpForm.addEventListener("submit", async e => {
+  e.preventDefault();
+  lpError.hidden = true;
+  const email = $("#lpEmail").value.trim(), password = $("#lpPassword").value;
+  if (!email || !password) {
+    lpError.textContent = "Please enter your email and password.";
+    lpError.hidden = false;
+    return;
+  }
+  lpSubmit.disabled = true;
+  lpSubmit.textContent = "Signing in...";
+  try {
+    const r = await api("POST", "login.php", { email, password });
+    if (!r.ok) {
+      lpError.textContent = r.error || "Login failed.";
+      lpError.hidden = false;
+      return;
+    }
+    authDlg.close();
+    lpForm.reset();
+    await initSession();          // loads this account's watchlist and picks
+  } catch {
+    lpError.textContent = "Could not reach the server. Is XAMPP running?";
+    lpError.hidden = false;
+  } finally {
+    lpSubmit.disabled = false;
+    lpSubmit.textContent = "Login";
+  }
 });
 
 renderAll();
