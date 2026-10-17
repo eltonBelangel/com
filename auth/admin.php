@@ -126,6 +126,7 @@ main { padding: 40px 48px 60px; min-width: 0; }
 table { width: 100%; border-collapse: collapse; min-width: 640px; }
 th { text-align: left; color: var(--muted); font-weight: 500; font-size: 14px; padding: 16px 20px; border-bottom: 1px solid var(--line); }
 td { padding: 14px 20px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+th.th-action { text-align: center; }
 tr:last-child td { border-bottom: 0; }
 tbody tr:hover { background: rgba(255,255,255,.02); }
 .cell { display: flex; align-items: center; gap: 14px; }
@@ -137,7 +138,7 @@ tbody tr:hover { background: rgba(255,255,255,.02); }
 .pill { display: inline-block; border: 1px solid var(--line); border-radius: 999px; padding: 2px 12px; font-size: 13px; color: var(--muted); }
 .pill.admin { border-color: var(--amber); color: var(--amber); }
 .rating { color: var(--amber); font-weight: 600; }
-.actions { display: flex; gap: 8px; justify-content: flex-end; }
+.actions { display: flex; gap: 8px; justify-content: center; }
 .icon-btn { background: none; border: 1px solid var(--line); border-radius: 10px; padding: 6px 12px; font-size: 13px; color: var(--muted); transition: color .2s, border-color .2s; }
 .icon-btn:hover { color: var(--text); border-color: var(--muted); }
 .icon-btn.danger:hover { color: var(--red); border-color: var(--red); }
@@ -244,7 +245,7 @@ dialog select option { background: var(--surface); color: var(--text); }
       </div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>User</th><th>Role</th><th>Joined</th><th></th></tr></thead>
+          <thead><tr><th>User</th><th>Role</th><th>Joined</th><th class="th-action">Action</th></tr></thead>
           <tbody id="userRows"></tbody>
         </table>
       </div>
@@ -260,7 +261,7 @@ dialog select option { background: var(--surface); color: var(--text); }
       </div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Movie</th><th>Genre</th><th>Year</th><th>Rating</th><th></th></tr></thead>
+          <thead><tr><th>Movie</th><th>Genre</th><th>Year</th><th>Rating</th><th class="th-action">Action</th></tr></thead>
           <tbody id="movieRows"></tbody>
         </table>
       </div>
