@@ -259,7 +259,17 @@ async function api(method, path, body) {
   return r.json();
 }
 
+let pendingSave = null;   // movie the guest tried to save before logging in
+
+/* Guests must log in first: open the login popup instead of saving. */
+function requireLogin(pendingId, message) {
+  pendingSave = pendingId ?? null;
+  if ($("#modal").open) $("#modal").close();
+  openLogin(message || "Please log in to add movies to your watchlist.");
+}
+
 function toggleSaved(id) {
+  if (!user) { requireLogin(id); return; }   // safety net: never save for guests
   const adding = !S.saved.has(id);
   adding ? S.saved.add(id) : S.saved.delete(id);
   if (!user) return;
@@ -320,7 +330,7 @@ async function initSession() {
       S.picks  = new Set(store.get("picks", []));
       S.liked  = new Set(store.get("liked", []));
       S.passed = new Set(store.get("passed", []));
-      S.saved  = new Set(store.get("saved", []));
+      S.saved  = new Set();                        // guests have no watchlist; they must log in
       $("#guestLinks").hidden = false;
       $("#userLinks").hidden = true;
     }
@@ -349,8 +359,12 @@ document.addEventListener("click", e => {
 
   if (d.pick) flip(S.picks, d.pick);
   else if (d.genre) S.genre = d.genre;
-  else if (d.save) toggleSaved(+d.save);
+  else if (d.save) {
+    if (!user) { requireLogin(+d.save); return; }   // login first, then save
+    toggleSaved(+d.save);
+  }
   else if (d.remove) {
+    if (!user) { requireLogin(null); return; }
     const id = +d.remove;
     S.saved.delete(id);
     if (user) {
@@ -400,7 +414,10 @@ $("#search").addEventListener("input", e => {
 const authDlg = $("#authDialog");
 const lpForm = $("#loginPopupForm"), lpError = $("#lpError"), lpSubmit = $("#lpSubmit");
 
-function openLogin() {
+const AUTH_SUB_DEFAULT = "Sign in to see your watchlist and picks made for you.";
+
+function openLogin(message) {
+  $(".auth-sub", authDlg).textContent = message || AUTH_SUB_DEFAULT;
   lpForm.reset();
   lpError.hidden = true;
   $("#lpPassword").type = "password";
@@ -441,15 +458,31 @@ lpForm.addEventListener("submit", async e => {
       lpError.hidden = false;
       return;
     }
+    const pending = pendingSave;  // remember it: closing the dialog clears pendingSave
     authDlg.close();
     lpForm.reset();
     await initSession();          // loads this account's watchlist and picks
+    if (pending != null && user && !S.saved.has(pending)) {
+      toggleSaved(pending);       // add the movie they originally clicked
+      save();
+      renderAll();
+    }
   } catch {
     lpError.textContent = "Could not reach the server. Is XAMPP running?";
     lpError.hidden = false;
   } finally {
     lpSubmit.disabled = false;
     lpSubmit.textContent = "Login";
+  }
+});
+
+authDlg.addEventListener("close", () => { pendingSave = null; });
+
+/* Guests clicking "Watchlist" in the navbar are asked to log in. */
+$("#savedLink").addEventListener("click", e => {
+  if (!user) {
+    e.preventDefault();
+    requireLogin(null, "Please log in to see your watchlist.");
   }
 });
 
